@@ -44,7 +44,7 @@ class VariantTable:
             for h in self.info_fields:
                 if h in variant.info:
                     if h == 'ANN':
-                        genes, effects, impacts, transcript, gene_id, aa_alt, nt_alt = decode_ann(variant)
+                        genes, effects, impacts, transcript, gene_id, aa_alt, nt_alt, sift_scores, polyphen_scores = decode_ann(variant)
                         obj['GENE'] = genes
                         obj['EFFECTS'] = effects
                         obj['IMPACT'] = impacts
@@ -52,6 +52,8 @@ class VariantTable:
                         obj['GENE_ID'] = gene_id
                         obj['PROTEIN ALTERATION'] = aa_alt
                         obj['DNA ALTERATION'] = nt_alt
+                        obj['SIFT'] = sift_scores
+                        obj['PolyPhen'] = polyphen_scores
                     elif h == 'COSMIC_ID':
                         cid = variant.info[h];
                         if cid is not None:
@@ -134,11 +136,15 @@ def decode_ann(variant):
     gene_ids = []
     aa_alts = []
     nt_alts = []
+    sift_scores = []
+    polyphen_scores = []
     for allele in variant.alts:
         for ann in annotations:
             ann_allele, kind, impact, gene, gene_id = ann[:5]
             feature_id = ann[6]
             nt_mod, aa_mod = ann[9:11]
+            sift_score = ann[34]
+            polyphen_score = ann[35]
 
             if allele != ann_allele:
                 continue
@@ -153,7 +159,9 @@ def decode_ann(variant):
             transcripts.append(feature_id)
             aa_alts.append(aa_mod)
             nt_alts.append(nt_mod)
-    return ','.join(genes), ','.join(effects), ','.join(impacts), ','.join(transcripts), ','.join(gene_ids), ','.join(aa_alts), ','.join(nt_alts)
+            sift_scores.append(sift_score)
+            polyphen_scores.append(polyphen_score)
+    return ','.join(genes), ','.join(effects), ','.join(impacts), ','.join(transcripts), ','.join(gene_ids), ','.join(aa_alts), ','.join(nt_alts), ','.join(sift_scores), ','.join(polyphen_scores)
 
 def create_link(url):
     """Create an html link for the given url"""
