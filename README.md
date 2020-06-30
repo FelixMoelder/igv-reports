@@ -1,6 +1,7 @@
 # igv-reports
 
-Python application to generate self-contained igv.js pages that can be opened within a browser with "file" protocol.   
+Python application to generate self-contained igv.js pages that can be opened within a browser with "file" protocol. 
+The generated html page contains all data neccessary for IGV as uuencoded blobs.  
 
 ## Installation
 
@@ -32,8 +33,8 @@ conda install pysam
 
 ## Creating a report
 
-A report consists of a table of sites or regions and associated igv views for each sites.  Reports are created with 
-command line script ```create_report```.  Command line arguments are described below.
+A report consists of a table of sites or regions and an associated igv views for each site.  Reports are created with 
+the command line script ```create_report```.  Command line arguments are described below.
 Although _--tracks_ is optional, a typical report will include at least an alignment track
 (BAM or CRAM) file from which the variants were called.  
 
@@ -42,7 +43,8 @@ Although _--tracks_ is optional, a typical report will include at least an align
     * sites    _vcf or bed file of genomic sites_
     * fasta   _reference fasta file, must be indexed_
 * Optional
-    * --tracks _space-delimited list of track files, see below for supported formats_
+    * --tracks _space-delimited list of track files, see below for supported formats.  If both *tracks* and *track-config* are specified *tracks* will appear first._
+    * --track-confg _file containing array of json configuration objects for igv.js tracks.  see the [igv.js wiki](https://github.com/igvteam/igv.js/wiki/Tracks-2.0) for more details.  This option allows customization of track parameters._
     * --ideogram _ideogram file in UCSC cytoIdeo format_
     * --template _html template file_
     * --output _output file name default="igvjs_viewer.html"_
@@ -69,10 +71,17 @@ create_report examples/variants/variants.vcf.gz https://s3.amazonaws.com/igv.bro
 
 ```
 
+#### Createing a junction report from a splice-junction bed file
+
+```bash
+create_report examples/junctions/Introns.38.bed https://s3.dualstack.us-east-1.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg38/hg38.fa --type junction --ideogram examples/junctions/cytoBandIdeo.txt --output junctions.html --track-config examples/junctions/tracks.json --info-columns TCGA GTEx variant_name --title "Sample A"
+```
+
 #### Converting genomic files to data URIs for use in igv.js 
 
 The script ```create_datauri`` converts the contents of a file to a data uri for use in igv.js.   The datauri will be
-printed to stdout.  
+printed to stdout.  *NOTE* It is not neccessary to run this script explicitly to create a report, it is documented here
+for use with stand-alone igv.js.   
 
 
 

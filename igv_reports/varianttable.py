@@ -42,26 +42,34 @@ class VariantTable:
                 obj['ID'] = render_ids(variant.id)
 
             for h in self.info_fields:
-                v = ''
                 if h in variant.info:
                     if h == 'ANN':
-                        genes, effects, impacts, transcript, aa_alt, nt_alt = decode_ann(variant)
+                        genes, effects, impacts, transcript, gene_id, aa_alt, nt_alt = decode_ann(variant)
+                        obj['GENE'] = genes
+                        obj['EFFECTS'] = effects
+                        obj['IMPACT'] = impacts
+                        obj['TRANSCRIPT'] = transcript
+                        obj['GENE_ID'] = gene_id
+                        obj['PROTEIN ALTERATION'] = aa_alt
+                        obj['DNA ALTERATION'] = nt_alt
                     elif h == 'COSMIC_ID':
-                        v = render_id(v)
+                        cid = variant.info[h];
+                        if cid is not None:
+                            if isinstance(cid, str) :
+                                return render_id(cid)
+                            elif len(cid) == 1:
+                                obj[h] = render_id(cid[0])
+                            else:
+                                tmp = ''
+                                for c in cid:
+                                    tmp = tmp + render_id(c) + ','
+                                obj[h] = tmp
                     else:
-                        v = render_values(variant.info[h])
-                if h == 'ANN':
-                    obj['GENE'] = genes
-                    obj['EFFECTS'] = effects
-                    obj['IMPACT'] = impacts
-                    obj['TRANSCRIPT'] = transcript
-                    obj['PROTEIN ALTERATION'] = aa_alt
-                    obj['DNA ALTERATION'] = nt_alt
+                        obj[h] = render_values(variant.info[h])
                 else:
-                    obj[h] = v
+                    obj[h] = ''
 
             for h in self.info_field_prefixes:
-                v = ''
                 for field in variant.info:
                     if field.startswith(h):
                         obj[field] = render_values(variant.info[field])
@@ -91,7 +99,10 @@ def render_value(v):
     if isinstance(v, float):
         # ensure that we don't waste space by insignificant digits
         return f'{v:.2g}'
-    return str(v)
+    elif v.startswith('http://') or v.startswith('https://'):
+        return create_link(v)
+    else:
+        return str(v)
 
 
 def render_values(v):
@@ -120,11 +131,12 @@ def decode_ann(variant):
     effects = []
     impacts = []
     transcripts = []
+    gene_ids = []
     aa_alts = []
     nt_alts = []
     for allele in variant.alts:
         for ann in annotations:
-            ann_allele, kind, impact, gene = ann[:4]
+            ann_allele, kind, impact, gene, gene_id = ann[:5]
             feature_id = ann[6]
             nt_mod, aa_mod = ann[9:11]
 
@@ -135,9 +147,14 @@ def decode_ann(variant):
             # Keep the most severe effect.
             # Link out to Genecards and show the full record in a tooltip.
             genes.append(gene)
+            gene_ids.append(gene_id)
             effects.append(kind.replace('&', '/'))
             impacts.append(impact)
             transcripts.append(feature_id)
             aa_alts.append(aa_mod)
             nt_alts.append(nt_mod)
-    return ','.join(genes), ','.join(effects), ','.join(impacts), ','.join(transcripts), ','.join(aa_alts), ','.join(nt_alts)
+    return ','.join(genes), ','.join(effects), ','.join(impacts), ','.join(transcripts), ','.join(gene_ids), ','.join(aa_alts), ','.join(nt_alts)
+
+def create_link(url):
+    """Create an html link for the given url"""
+    return (f'<a href = "{url}" target="_blank">{url}</a>')
