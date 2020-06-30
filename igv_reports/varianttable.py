@@ -98,7 +98,7 @@ class VariantTable:
 
 def render_value(v):
     """Render given value to string."""
-    if isinstance(v, float):
+    if isinstance(v, float) or isinstance(v, int):
         # ensure that we don't waste space by insignificant digits
         return f'{v:.2g}'
     elif v.startswith('http://') or v.startswith('https://'):
