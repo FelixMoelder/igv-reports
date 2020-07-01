@@ -142,7 +142,7 @@ def decode_ann(variant):
         for ann in annotations:
             ann_allele, kind, impact, gene, gene_id = ann[:5]
             feature_id = ann[6]
-            nt_mod, aa_mod = ann[9:11]
+            nt_mod, aa_mod = ann[10:12]
             sift_score = ann[34].split("(")[1][:-1] if ann[34] else ""
             polyphen_score = ann[35].split("(")[1][:-1] if ann[35] else ""
 
