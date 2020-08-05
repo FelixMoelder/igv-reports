@@ -44,7 +44,7 @@ class VariantTable:
             for h in self.info_fields:
                 if h in variant.info:
                     if h == 'ANN':
-                        genes, effects, impacts, transcript, gene_id, aa_alt, nt_alt, sift_scores, polyphen_scores = decode_ann(variant)
+                        genes, effects, impacts, transcript, gene_id, aa_alt, nt_alt, sift_scores, polyphen_scores, uniprot_entries = decode_ann(variant)
                         obj['GENE'] = genes
                         obj['EFFECTS'] = effects
                         obj['IMPACT'] = impacts
@@ -54,6 +54,7 @@ class VariantTable:
                         obj['DNA ALTERATION'] = nt_alt
                         obj['SIFT'] = sift_scores
                         obj['PolyPhen'] = polyphen_scores
+                        obj['Uniprot'] = uniprot_entries
                     elif h == 'COSMIC_ID':
                         cid = variant.info[h];
                         if cid is not None:
@@ -137,6 +138,7 @@ def decode_ann(variant):
     aa_alts = []
     nt_alts = []
     sift_scores = []
+    uniprot_entries = []
     polyphen_scores = []
     for allele in variant.alts:
         for ann in annotations:
@@ -145,7 +147,7 @@ def decode_ann(variant):
             nt_mod, aa_mod = ann[10:12]
             sift_score = ann[34].split("(")[1][:-1] if ann[34] else ""
             polyphen_score = ann[35].split("(")[1][:-1] if ann[35] else ""
-
+            uniprot_entry = ann[29] if ann[29] else ""
             if allele != ann_allele:
                 continue
 
@@ -161,7 +163,8 @@ def decode_ann(variant):
             nt_alts.append(nt_mod)
             sift_scores.append(sift_score)
             polyphen_scores.append(polyphen_score)
-    return ','.join(genes), ','.join(effects), ','.join(impacts), ','.join(transcripts), ','.join(gene_ids), ','.join(aa_alts), ','.join(nt_alts), ','.join(sift_scores), ','.join(polyphen_scores)
+            uniprot_entries.append(uniprot_entry)
+    return ','.join(genes), ','.join(effects), ','.join(impacts), ','.join(transcripts), ','.join(gene_ids), ','.join(aa_alts), ','.join(nt_alts), ','.join(sift_scores), ','.join(polyphen_scores), ','.join(uniprot_entries)
 
 def create_link(url):
     """Create an html link for the given url"""
